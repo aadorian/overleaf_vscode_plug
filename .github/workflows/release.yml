@@ -29,7 +29,7 @@ jobs:
         run: npx @vscode/vsce package --out latex-overleaf-sync.vsix
 
       - name: Attach VSIX to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: latex-overleaf-sync.vsix
 
