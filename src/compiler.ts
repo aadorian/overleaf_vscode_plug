@@ -75,7 +75,11 @@ export class LatexCompiler {
       proc.stderr.on('data', (d) => this.output.append(d.toString()));
 
       proc.on('error', (err) =>
-        reject(new Error(`No se pudo ejecutar "${tool}". ¿Está instalado en PATH? ${err.message}`))
+        reject(
+          new Error(
+            `No se pudo ejecutar "${tool}". ¿Está instalado en PATH? ${err.message}`
+          )
+        )
       );
       proc.on('close', (code) => {
         if (code === 0) {

@@ -3,6 +3,9 @@ import { OverleafSync, resolveMainTex } from './overleafSync';
 import { OverleafStatusProvider } from './statusView';
 import { PdfViewer } from './pdfViewer';
 import { LatexCompiler, isLatexWorkshopAvailable } from './compiler';
+import { AutoSync } from './autoSync';
+import { forwardSearch } from './synctex';
+import * as path from 'path';
 
 /**
  * =============================================================================
@@ -36,7 +39,8 @@ export function activate(context: vscode.ExtensionContext): void {
   // --- Módulos ------------------------------------------------------------
   const sync = new OverleafSync(workspaceRoot, context.secrets, output);
   const compiler = new LatexCompiler(workspaceRoot, output);
-  context.subscriptions.push(sync);
+  const autoSync = new AutoSync(sync, output);
+  context.subscriptions.push(sync, autoSync);
 
   // --- Vista lateral (Explorer) ------------------------------------------
   const statusProvider = new OverleafStatusProvider(sync);
@@ -45,7 +49,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // --- Barra de estado ----------------------------------------------------
-  const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+  const statusBar = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    100
+  );
   statusBar.command = 'latexOverleaf.refreshStatus';
   context.subscriptions.push(statusBar);
   const updateStatusBar = () => {
@@ -90,8 +97,43 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     vscode.commands.registerCommand('latexOverleaf.openPdf', () =>
       compileAndPreview(true)
+    ),
+    vscode.commands.registerCommand('latexOverleaf.compile', () =>
+      compileAndPreview(false)
+    ),
+    vscode.commands.registerCommand('latexOverleaf.forwardSearch', () =>
+      runForwardSearch()
     )
   );
+
+  // --- SyncTeX Forward Search --------------------------------------------
+  const runForwardSearch = async (): Promise<void> => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || editor.document.languageId !== 'latex') {
+      vscode.window.showWarningMessage('Abre un archivo .tex para usar Forward Search.');
+      return;
+    }
+    const mainTex = resolveMainTex(workspaceRoot);
+    const pdfPath = path.join(
+      path.dirname(mainTex),
+      `${path.basename(mainTex, '.tex')}.pdf`
+    );
+    const line = editor.selection.active.line + 1;
+    const column = editor.selection.active.character + 1;
+    try {
+      const hit = await forwardSearch(editor.document.fileName, line, column, pdfPath);
+      const viewer = PdfViewer.show(pdfPath, context.extensionUri);
+      if (hit) {
+        viewer.revealSyncTexLocation(hit.page, hit.x, hit.y);
+      } else {
+        vscode.window.showWarningMessage(
+          'SyncTeX: no se encontró la posición en el PDF.'
+        );
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(`Forward Search falló: ${err}`);
+    }
+  };
 
   // --- Compilar al guardar + auto-push opcional --------------------------
   context.subscriptions.push(
@@ -103,9 +145,8 @@ export function activate(context: vscode.ExtensionContext): void {
       if (cfg.get<boolean>('compileOnSave', true)) {
         await compileAndPreview(false);
       }
-      if (cfg.get<boolean>('autoPushOnSave', false)) {
-        await sync.pushChanges('Auto-push al guardar (VS Code)');
-      }
+      // El auto-push va con debounce a través de AutoSync (ver autoSync.ts).
+      autoSync.notifySaved();
     })
   );
 

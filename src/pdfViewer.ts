@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { inverseSearch, openTexAtLine } from './synctex';
 
 /**
  * =============================================================================
@@ -113,12 +114,24 @@ export class PdfViewer {
     this.panel.webview.postMessage({ type: 'forwardSearch', page, x, y });
   }
 
+  /** Devuelve la ruta del PDF actualmente mostrado. */
+  public getPdfPath(): string {
+    return this.pdfPath;
+  }
+
   private async handleInverseSearch(page: number, x: number, y: number): Promise<void> {
-    // TODO: ejecutar `synctex edit -o <page>:<x>:<y>:<pdf>` y abrir el .tex en la
-    // línea devuelta. Se deja el flujo cableado para la extensión SyncTeX.
-    vscode.window.showInformationMessage(
-      `Inverse search solicitado en página ${page} (${x}, ${y}).`
-    );
+    try {
+      const hit = await inverseSearch(this.pdfPath, page, x, y);
+      if (hit) {
+        await openTexAtLine(hit.file, hit.line);
+      } else {
+        vscode.window.showWarningMessage(
+          'SyncTeX: no se encontró la posición en el .tex.'
+        );
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(`SyncTeX inverse search falló: ${err}`);
+    }
   }
 
   private getNonce(): string {

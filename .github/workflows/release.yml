@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Package & Publish VSIX
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run compile
+
+      - name: Package VSIX
+        run: npx @vscode/vsce package --out latex-overleaf-sync.vsix
+
+      - name: Attach VSIX to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: latex-overleaf-sync.vsix
+
+      # Uncomment and set VSCE_PAT / OVSX_PAT secrets to auto-publish.
+      # - name: Publish to VS Code Marketplace
+      #   run: npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
+      # - name: Publish to Open VSX
+      #   run: npx ovsx publish latex-overleaf-sync.vsix -p ${{ secrets.OVSX_PAT }}

@@ -55,6 +55,32 @@
         "title": "LaTeX Overleaf: Refresh Sync Status",
         "category": "LaTeX Overleaf",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "latexOverleaf.forwardSearch",
+        "title": "LaTeX Overleaf: SyncTeX Forward Search",
+        "category": "LaTeX Overleaf",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "latexOverleaf.compile",
+        "title": "LaTeX Overleaf: Compile",
+        "category": "LaTeX Overleaf",
+        "icon": "$(play)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "latexOverleaf.forwardSearch",
+        "key": "ctrl+alt+j",
+        "mac": "cmd+alt+j",
+        "when": "editorLangId == latex"
+      },
+      {
+        "command": "latexOverleaf.compile",
+        "key": "ctrl+alt+b",
+        "mac": "cmd+alt+b",
+        "when": "editorLangId == latex"
       }
     ],
     "views": {
@@ -107,13 +133,33 @@
         "latexOverleaf.latexCommand": {
           "type": "string",
           "default": "latexmk",
-          "enum": ["latexmk", "pdflatex"],
+          "enum": [
+            "latexmk",
+            "pdflatex"
+          ],
           "description": "Herramienta de compilación local. Se recomienda latexmk."
         },
         "latexOverleaf.autoPushOnSave": {
           "type": "boolean",
           "default": false,
           "description": "Realizar push a Overleaf automáticamente tras guardar (usar con cautela)."
+        },
+        "latexOverleaf.autoPull": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sondear Overleaf en segundo plano y hacer pull de cambios remotos automáticamente."
+        },
+        "latexOverleaf.autoPullIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 15,
+          "description": "Intervalo (en segundos) del auto-pull en segundo plano."
+        },
+        "latexOverleaf.pushDebounceMs": {
+          "type": "number",
+          "default": 4000,
+          "minimum": 500,
+          "description": "Tiempo de espera tras el último guardado antes del auto-push (ms)."
         }
       }
     }
@@ -122,7 +168,10 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "format": "prettier --write \"src/**/*.ts\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "package": "vsce package"
   },
   "dependencies": {
     "simple-git": "^3.22.0"
@@ -132,7 +181,18 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/vsce": "^2.24.0",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.5",
     "typescript": "^5.3.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/<your-org>/latex-overleaf-sync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/<your-org>/latex-overleaf-sync/issues"
+  },
+  "homepage": "https://github.com/<your-org>/latex-overleaf-sync#readme"
 }

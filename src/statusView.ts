@@ -64,9 +64,7 @@ export class OverleafStatusProvider implements vscode.TreeDataProvider<StatusIte
       );
     }
     if (s.lastError) {
-      items.push(
-        new StatusItem('Error', s.lastError, new vscode.ThemeIcon('error'))
-      );
+      items.push(new StatusItem('Error', s.lastError, new vscode.ThemeIcon('error')));
     }
     return items;
   }

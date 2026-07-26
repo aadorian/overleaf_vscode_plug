@@ -119,7 +119,8 @@ export class OverleafSync {
         title: 'URL del repositorio Git de Overleaf',
         prompt: 'Ejemplo: https://git.overleaf.com/<PROJECT_ID>',
         ignoreFocusOut: true,
-        validateInput: (v) => (v.startsWith('http') ? undefined : 'Debe ser una URL http(s)')
+        validateInput: (v) =>
+          v.startsWith('http') ? undefined : 'Debe ser una URL http(s)'
       });
       if (!pick) {
         return;
@@ -143,7 +144,10 @@ export class OverleafSync {
     this.log('Token de Overleaf almacenado en SecretStorage.');
 
     await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: 'Conectando con Overleaf…' },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Conectando con Overleaf…'
+      },
       async () => {
         await this.ensureRepo();
         await this.refreshStatus();
@@ -157,7 +161,9 @@ export class OverleafSync {
   private async getToken(): Promise<string> {
     const token = await this.secrets.get(SECRET_TOKEN_KEY);
     if (!token) {
-      throw new Error('No hay token de Overleaf. Ejecuta "LaTeX Overleaf: Connect Account".');
+      throw new Error(
+        'No hay token de Overleaf. Ejecuta "LaTeX Overleaf: Connect Account".'
+      );
     }
     return token;
   }
@@ -233,7 +239,9 @@ export class OverleafSync {
     await this.withRepo(async () => {
       const status = await this.git.status();
       if (status.files.length === 0) {
-        vscode.window.showInformationMessage('Overleaf: no hay cambios locales que enviar.');
+        vscode.window.showInformationMessage(
+          'Overleaf: no hay cambios locales que enviar.'
+        );
         return;
       }
 
@@ -287,10 +295,7 @@ export class OverleafSync {
   }
 
   /** Envuelve una operación con manejo de errores + barra de progreso. */
-  private async withRepo(
-    fn: () => Promise<void>,
-    title: string
-  ): Promise<void> {
+  private async withRepo(fn: () => Promise<void>, title: string): Promise<void> {
     try {
       await this.ensureRepo();
       await vscode.window.withProgress(
