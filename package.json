@@ -1,0 +1,138 @@
+{
+  "name": "latex-overleaf-sync",
+  "displayName": "LaTeX Overleaf Sync",
+  "description": "Entorno LaTeX en VS Code con sincronización bidireccional con Overleaf, visor PDF integrado y SyncTeX.",
+  "version": "0.0.1",
+  "publisher": "your-publisher-id",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "keywords": [
+    "latex",
+    "overleaf",
+    "pdf",
+    "synctex",
+    "git"
+  ],
+  "activationEvents": [
+    "onLanguage:latex",
+    "workspaceContains:**/*.tex"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "latexOverleaf.connectAccount",
+        "title": "LaTeX Overleaf: Connect Account",
+        "category": "LaTeX Overleaf",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "latexOverleaf.pull",
+        "title": "LaTeX Overleaf: Pull Latest Changes",
+        "category": "LaTeX Overleaf",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "latexOverleaf.push",
+        "title": "LaTeX Overleaf: Push Changes",
+        "category": "LaTeX Overleaf",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "latexOverleaf.openPdf",
+        "title": "LaTeX Overleaf: Open Webview PDF",
+        "category": "LaTeX Overleaf",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "latexOverleaf.refreshStatus",
+        "title": "LaTeX Overleaf: Refresh Sync Status",
+        "category": "LaTeX Overleaf",
+        "icon": "$(refresh)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "latexOverleaf.statusView",
+          "name": "Overleaf Sync",
+          "icon": "$(sync)",
+          "contextualTitle": "Overleaf Sync"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "latexOverleaf.pull",
+          "when": "view == latexOverleaf.statusView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "latexOverleaf.push",
+          "when": "view == latexOverleaf.statusView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "latexOverleaf.refreshStatus",
+          "when": "view == latexOverleaf.statusView",
+          "group": "navigation@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "LaTeX Overleaf Sync",
+      "properties": {
+        "latexOverleaf.overleafGitUrl": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "URL del repositorio Git del proyecto Overleaf (por ejemplo `https://git.overleaf.com/<PROJECT_ID>`). Se obtiene en Overleaf desde *Menu → Git*."
+        },
+        "latexOverleaf.mainTexFile": {
+          "type": "string",
+          "default": "main.tex",
+          "description": "Ruta (relativa a la raíz del workspace) del archivo .tex principal a compilar."
+        },
+        "latexOverleaf.compileOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Compilar automáticamente al guardar un archivo .tex."
+        },
+        "latexOverleaf.latexCommand": {
+          "type": "string",
+          "default": "latexmk",
+          "enum": ["latexmk", "pdflatex"],
+          "description": "Herramienta de compilación local. Se recomienda latexmk."
+        },
+        "latexOverleaf.autoPushOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Realizar push a Overleaf automáticamente tras guardar (usar con cautela)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "dependencies": {
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
